@@ -135,10 +135,16 @@
             <div class="max-w-7xl mx-auto">
                 <div id="view-pledges" class="block animate-[fadeIn_0.4s_ease-out]">
                     <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
-                        <div class="p-6 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center"><h3 class="font-bold text-lg text-gray-800 dark:text-white">Recent Pledge Activity</h3></div>
+                        <div class="p-6 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center">
+                            <h3 class="font-bold text-lg text-gray-800 dark:text-white">Recent Pledge Activity</h3>
+                            <button onclick="exportToExcel()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2 transition-all">
+                                <i class="fas fa-file-excel"></i>
+                                <span>Export to Excel</span>
+                            </button>
+                        </div>
                         <div class="overflow-x-auto">
                             <table class="w-full text-left border-collapse">
-                                <thead class="bg-gray-50 dark:bg-gray-700/50 text-gray-500 dark:text-gray-400 text-xs uppercase font-bold tracking-wider"><tr><th class="p-5">Date</th><th class="p-5">Name</th><th class="p-5">Contact</th><th class="p-5 text-right">Actions</th></tr></thead>
+                                <thead class="bg-gray-50 dark:bg-gray-700/50 text-gray-500 dark:text-gray-400 text-xs uppercase font-bold tracking-wider"><tr><th class="p-5">Date</th><th class="p-5">Name</th><th class="p-5">Birthday</th><th class="p-5">Contact</th><th class="p-5 text-right">Actions</th></tr></thead>
                                 <tbody id="pledge-table-body" class="text-sm text-gray-700 dark:text-gray-300 divide-y divide-gray-100 dark:divide-gray-700"></tbody>
                             </table>
                         </div>
@@ -232,7 +238,7 @@
                         </div>
                         <div class="grid grid-cols-2 gap-5">
                             <input type="email" name="email" placeholder="arjun@gmail.com" class="w-full p-3.5 rounded-xl bg-gray-50 dark:bg-gray-700 border-transparent focus:border-secondary outline-none dark:text-white placeholder-gray-400" required>
-                            <input type="text" name="birthday" placeholder="DoB (DD-MM)" pattern="(0[1-9]|[12][0-9]|3[01])-(0[1-9]|1[0-2])" title="Enter date in DD-MM format (e.g., 15-06)" class="w-full p-3.5 rounded-xl bg-gray-50 dark:bg-gray-700 border-transparent focus:border-secondary outline-none dark:text-white placeholder-gray-400" required>
+                            <input type="text" name="birthday" placeholder="Birthday (DD-MM)" pattern="(0[1-9]|[12][0-9]|3[01])-(0[1-9]|1[0-2])" title="Enter date in DD-MM format (e.g., 15-06)" class="w-full p-3.5 rounded-xl bg-gray-50 dark:bg-gray-700 border-transparent focus:border-secondary outline-none dark:text-white placeholder-gray-400" required>
                         </div>
                         <input type="tel" name="phone" placeholder="+91 98765 43210" class="w-full p-3.5 rounded-xl bg-gray-50 dark:bg-gray-700 border-transparent focus:border-secondary outline-none dark:text-white placeholder-gray-400" required>
                         <div class="pt-4 flex items-center justify-between">
@@ -317,7 +323,7 @@
             <div class="relative z-10 max-w-4xl mx-auto text-white mt-20 reveal">
                 <span class="inline-block bg-white/20 backdrop-blur-md border border-white/30 px-4 py-1.5 rounded-full text-accent font-bold tracking-widest uppercase text-xs mb-6 animate-pulse">Recharging the Planet</span>
                 <h1 class="text-5xl md:text-7xl font-bold mb-6 leading-tight drop-shadow-lg font-serif">Plant a Tree. <br><span class="italic text-gradient">Grow a Legacy.</span></h1>
-                <p class="text-lg md:text-xl mb-10 text-gray-200 max-w-2xl mx-auto font-light leading-relaxed">Join us in planting for a greener future. Celebrate birthdays, anniversaries, and milestones by restoring the planet.</p>
+                <p class="text-lg md:text-xl mb-10 text-gray-200 max-w-2xl mx-auto font-light leading-relaxed">Join us in planting for a greener future. Celebrate birthdays, anniversaries, and milestones by Recharging the planet.</p>
                 <div class="flex flex-col sm:flex-row gap-5 justify-center">
                     <button onclick="openPledgeModal()" class="bg-primary hover:bg-emerald-900 text-white font-bold px-9 py-4 rounded-full transition-all shadow-lg transform hover:-translate-y-1 ring-4 ring-primary/30 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-accent">Start Planting</button>
                     <a href="#about" class="bg-white/10 backdrop-blur-md border border-white/40 hover:bg-white hover:text-primary text-white font-bold px-9 py-4 rounded-full transition-all flex items-center justify-center gap-2"><i class="far fa-play-circle"></i> Our Story</a>
@@ -1121,37 +1127,65 @@
         }
 
         function setupAdminListeners() {
-            if (!db) return;
+            if (!db) {
+                console.error('Database not initialized');
+                document.getElementById('loading-state').style.display = 'none';
+                document.getElementById('empty-state').classList.remove('hidden');
+                return;
+            }
             
             // Pledges Listener
-            const qPledges = query(collection(db, 'pledges'), orderBy("timestamp", "desc"));
-            onSnapshot(qPledges, (snap) => {
-                const pledges = [];
-                snap.forEach(doc => pledges.push({ id: doc.id, ...doc.data() }));
-                renderAdminTable(pledges);
-                document.getElementById('stat-total-pledges').innerText = pledges.length;
-                document.getElementById('stat-community').innerText = pledges.length + 1240;
-            });
+            try {
+                const qPledges = query(collection(db, 'pledges'), orderBy("timestamp", "desc"));
+                onSnapshot(qPledges, (snap) => {
+                    const pledges = [];
+                    snap.forEach(doc => pledges.push({ id: doc.id, ...doc.data() }));
+                    renderAdminTable(pledges);
+                    const statPledges = document.getElementById('stat-total-pledges');
+                    const statCommunity = document.getElementById('stat-community');
+                    if (statPledges) statPledges.innerText = pledges.length;
+                    if (statCommunity) statCommunity.innerText = pledges.length + 1240;
+                }, (error) => {
+                    console.error('Error fetching pledges:', error);
+                    document.getElementById('loading-state').style.display = 'none';
+                    document.getElementById('empty-state').classList.remove('hidden');
+                    window.showToast('Error loading pledges: ' + error.message, 'error');
+                });
+            } catch (error) {
+                console.error('Error setting up pledges listener:', error);
+                document.getElementById('loading-state').style.display = 'none';
+                document.getElementById('empty-state').classList.remove('hidden');
+            }
 
             // Products Listener (For Admin List)
-            const qProducts = query(collection(db, 'products'));
-            onSnapshot(qProducts, (snap) => {
-                const products = [];
-                snap.forEach(doc => products.push({ id: doc.id, ...doc.data() }));
-                const tbody = document.getElementById('admin-product-list');
-                tbody.innerHTML = products.map(p => `
-                    <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50">
-                        <td class="p-4"><img src="${p.image}" class="w-12 h-12 rounded-lg object-cover"></td>
-                        <td class="p-4"><div class="font-bold text-gray-800 dark:text-white">${p.name}</div><div class="text-xs text-gray-500">₹${p.price}</div></td>
-                        <td class="p-4 text-right"><button onclick="window.deleteProduct('${p.id}')" class="text-red-400 hover:text-red-600"><i class="fas fa-trash"></i></button></td>
-                    </tr>
-                `).join('');
-            });
+            try {
+                const qProducts = query(collection(db, 'products'));
+                onSnapshot(qProducts, (snap) => {
+                    const products = [];
+                    snap.forEach(doc => products.push({ id: doc.id, ...doc.data() }));
+                    const tbody = document.getElementById('admin-product-list');
+                    if (tbody) {
+                        tbody.innerHTML = products.map(p => `
+                            <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                                <td class="p-4"><img src="${p.image}" class="w-12 h-12 rounded-lg object-cover"></td>
+                                <td class="p-4"><div class="font-bold text-gray-800 dark:text-white">${p.name}</div><div class="text-xs text-gray-500">₹${p.price}</div></td>
+                                <td class="p-4 text-right"><button onclick="window.deleteProduct('${p.id}')" class="text-red-400 hover:text-red-600"><i class="fas fa-trash"></i></button></td>
+                            </tr>
+                        `).join('');
+                    }
+                });
+            } catch (error) {
+                console.error('Error setting up products listener:', error);
+            }
         }
 
         // -------------------- COMMON LOGIC -------------------- //
+        
+        // Store pledges globally for export
+        let globalPledges = [];
 
         function renderAdminTable(pledges) {
+            globalPledges = pledges; // Store for export
             const tbody = document.getElementById('pledge-table-body');
             const loading = document.getElementById('loading-state');
             const empty = document.getElementById('empty-state');
@@ -1168,9 +1202,9 @@
                     <td class="p-5 text-gray-500 dark:text-gray-400 font-mono text-xs">${dateStr}</td>
                     <td class="p-5">
                         <div class="font-bold text-primary dark:text-white">${data.fullName}</div>
-                        <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                            <i class="fas fa-birthday-cake mr-1"></i>${data.birthday || 'N/A'}
-                        </div>
+                    </td>
+                    <td class="p-5 text-gray-600 dark:text-gray-300">
+                        <div class="text-sm"><i class="fas fa-birthday-cake mr-1"></i>${data.birthday || 'N/A'}</div>
                     </td>
                     <td class="p-5 text-gray-600 dark:text-gray-300">
                         <div class="text-sm">${data.email}</div>
@@ -1181,6 +1215,50 @@
                     <td class="p-5 text-right">
                         <button onclick="window.deletePledge('${data.id}')" class="text-red-400 hover:text-red-600 transition-colors">
                             <i class="fas fa-trash"></i>
+                        </button>
+                    </td>`;
+                tbody.appendChild(row);
+            });
+        }
+        
+        // Export to Excel function
+        window.exportToExcel = () => {
+            if (globalPledges.length === 0) {
+                window.showToast("No data to export", "error");
+                return;
+            }
+            
+            // Create CSV content
+            const headers = ['Date', 'First Name', 'Last Name', 'Full Name', 'Email', 'Phone', 'Birthday'];
+            const csvContent = [
+                headers.join(','),
+                ...globalPledges.map(pledge => {
+                    const date = pledge.timestamp ? new Date(pledge.timestamp.seconds * 1000).toLocaleDateString() : 'N/A';
+                    return [
+                        date,
+                        pledge.firstName || '',
+                        pledge.lastName || '',
+                        pledge.fullName || '',
+                        pledge.email || '',
+                        pledge.phone || '',
+                        pledge.birthday || ''
+                    ].map(field => `"${field}"`).join(',');
+                })
+            ].join('\n');
+            
+            // Create download
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            link.setAttribute('download', `pledges_${new Date().toISOString().split('T')[0]}.csv`);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            window.showToast(`Exported ${globalPledges.length} pledges to Excel`, "success");
+        };
                         </button>
                     </td>`;
                 tbody.appendChild(row);
@@ -1312,8 +1390,10 @@
                 btn.disabled = false; 
             }
         };
-        };
 
+        // Load products immediately on page load
+        loadProducts();
+        
         initAuth(); 
     </script>
 </body>
