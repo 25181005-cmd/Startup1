@@ -1,0 +1,26 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "orders",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "timestamp",
+          "order": "DESCENDING"
+        }
+              ]
+                  },
+                      {
+                            "collectionGroup": "pledges",
+                                  "queryScope": "COLLECTION",
+                                        "fields": [
+                                                {
+                                                          "fieldPath": "timestamp",
+                                                                    "order": "DESCENDING"
+                                                                            }
+                                                                                  ]
+                                                                                      }
+                                                                                        ],
+                                                                                          "fieldOverrides": []
+                                                                                          }
+                                                                                          

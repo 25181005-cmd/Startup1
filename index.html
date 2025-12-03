@@ -227,20 +227,20 @@
                 <div id="modal-form-container">
                     <form onsubmit="handleModalPledge(event)" class="space-y-5">
                         <div class="grid grid-cols-2 gap-5">
-                            <input type="text" name="firstName" placeholder="Alex" class="w-full p-3.5 rounded-xl bg-gray-50 dark:bg-gray-700 border-transparent focus:border-secondary outline-none dark:text-white placeholder-gray-400" required>
-                            <input type="text" name="lastName" placeholder="Smith" class="w-full p-3.5 rounded-xl bg-gray-50 dark:bg-gray-700 border-transparent focus:border-secondary outline-none dark:text-white placeholder-gray-400" required>
+                            <input type="text" name="firstName" placeholder="Arjun" class="w-full p-3.5 rounded-xl bg-gray-50 dark:bg-gray-700 border-transparent focus:border-secondary outline-none dark:text-white placeholder-gray-400" required>
+                            <input type="text" name="lastName" placeholder="Sharma" class="w-full p-3.5 rounded-xl bg-gray-50 dark:bg-gray-700 border-transparent focus:border-secondary outline-none dark:text-white placeholder-gray-400" required>
                         </div>
                         <div class="grid grid-cols-2 gap-5">
-                            <input type="email" name="email" placeholder="alex@earth.com" class="w-full p-3.5 rounded-xl bg-gray-50 dark:bg-gray-700 border-transparent focus:border-secondary outline-none dark:text-white placeholder-gray-400" required>
-                            <input type="date" name="birthday" class="w-full p-3.5 rounded-xl bg-gray-50 dark:bg-gray-700 border-transparent focus:border-secondary outline-none dark:text-white text-gray-500 dark:text-gray-400" required>
+                            <input type="email" name="email" placeholder="arjun@gmail.com" class="w-full p-3.5 rounded-xl bg-gray-50 dark:bg-gray-700 border-transparent focus:border-secondary outline-none dark:text-white placeholder-gray-400" required>
+                            <input type="text" name="birthday" placeholder="DoB (DD-MM)" pattern="(0[1-9]|[12][0-9]|3[01])-(0[1-9]|1[0-2])" title="Enter date in DD-MM format (e.g., 15-06)" class="w-full p-3.5 rounded-xl bg-gray-50 dark:bg-gray-700 border-transparent focus:border-secondary outline-none dark:text-white placeholder-gray-400" required>
                         </div>
-                        <input type="tel" name="phone" placeholder="+1 (555) 000-0000" class="w-full p-3.5 rounded-xl bg-gray-50 dark:bg-gray-700 border-transparent focus:border-secondary outline-none dark:text-white placeholder-gray-400" required>
+                        <input type="tel" name="phone" placeholder="+91 98765 43210" class="w-full p-3.5 rounded-xl bg-gray-50 dark:bg-gray-700 border-transparent focus:border-secondary outline-none dark:text-white placeholder-gray-400" required>
                         <div class="pt-4 flex items-center justify-between">
                             <label class="flex items-center gap-3 cursor-pointer">
                                 <input type="checkbox" class="w-5 h-5 text-primary rounded focus:ring-primary border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-700" required>
-                                <span class="text-sm text-gray-500 dark:text-gray-400">I agree to the terms</span>
+                                <span class="text-sm text-gray-500 dark:text-gray-400">Love to get reminded</span>
                             </label>
-                            <button type="submit" class="bg-primary dark:bg-secondary text-white dark:text-gray-900 px-8 py-3 rounded-xl font-bold shadow-lg hover:bg-emerald-900 dark:hover:bg-emerald-400 transition-all transform hover:-translate-y-1 flex items-center gap-2 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"><span>Confirm Pledge</span><i class="fas fa-check-circle"></i></button>
+                            <button type="submit" class="bg-primary dark:bg-secondary text-white dark:text-gray-900 px-8 py-3 rounded-xl font-bold shadow-lg hover:bg-emerald-900 dark:hover:bg-emerald-400 transition-all transform hover:-translate-y-1 flex items-center gap-2 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"><span>I Pledge</span><i class="fas fa-check-circle"></i></button>
                         </div>
                     </form>
                 </div>
@@ -397,15 +397,537 @@
         </div>
     </footer>
 
+    <!-- CART MODAL -->
+    <div id="cart-modal" class="fixed inset-0 z-[110] bg-primary/60 dark:bg-black/80 items-center justify-center p-4 backdrop-blur-md opacity-0 hidden transition-opacity duration-500" aria-modal="true" role="dialog">
+        <div class="bg-white dark:bg-gray-800 w-full max-w-2xl relative rounded-3xl shadow-2xl overflow-hidden transform scale-95 transition-transform duration-500 border border-white/10 max-h-[85vh] flex flex-col">
+            <div class="p-6 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between sticky top-0 bg-white dark:bg-gray-800 z-10">
+                <h2 class="text-2xl font-bold text-primary dark:text-white font-serif">Your Cart</h2>
+                <button onclick="closeCart()" class="bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-dark dark:text-white w-10 h-10 rounded-full flex items-center justify-center transition-all focus:outline-none"><i class="fas fa-times"></i></button>
+            </div>
+            <div id="cart-items" class="p-6 flex-1 overflow-y-auto">
+                <p class="text-center text-gray-400 py-10">Your cart is empty</p>
+            </div>
+            <div id="cart-footer" class="p-6 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 hidden">
+                <div class="flex items-center justify-between mb-4">
+                    <span class="text-lg font-bold text-gray-700 dark:text-gray-300">Total:</span>
+                    <span id="cart-total" class="text-2xl font-bold text-primary dark:text-secondary">₹0</span>
+                </div>
+                <button onclick="handleCheckout()" class="w-full bg-primary dark:bg-secondary text-white dark:text-gray-900 font-bold py-3.5 rounded-xl hover:bg-emerald-900 dark:hover:bg-emerald-400 transition-all flex items-center justify-center gap-2">
+                    <span>Proceed to Checkout</span>
+                    <i class="fas fa-arrow-right"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- CHECKOUT MODAL -->
+    <div id="checkout-modal" class="fixed inset-0 z-[115] bg-primary/60 dark:bg-black/80 items-center justify-center p-4 backdrop-blur-md opacity-0 hidden transition-opacity duration-500" aria-modal="true" role="dialog">
+        <div class="bg-white dark:bg-gray-800 w-full max-w-4xl relative rounded-3xl shadow-2xl overflow-hidden transform scale-95 transition-transform duration-500 border border-white/10 max-h-[90vh] flex flex-col">
+            <div class="p-6 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between sticky top-0 bg-white dark:bg-gray-800 z-10">
+                <h2 class="text-2xl font-bold text-primary dark:text-white font-serif">Checkout</h2>
+                <button onclick="closeCheckout()" class="bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-dark dark:text-white w-10 h-10 rounded-full flex items-center justify-center transition-all focus:outline-none"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="p-6 md:p-8 flex-1 overflow-y-auto">
+                <div class="grid md:grid-cols-2 gap-8">
+                    <!-- Left: Checkout Form -->
+                    <div>
+                        <h3 class="text-lg font-bold text-gray-800 dark:text-white mb-4">Billing Information</h3>
+                        <form id="checkout-form" class="space-y-4">
+                            <div class="grid grid-cols-2 gap-4">
+                                <input type="text" name="firstName" placeholder="First Name" class="w-full p-3 rounded-xl bg-gray-50 dark:bg-gray-700 border-transparent focus:border-secondary outline-none dark:text-white" required>
+                                <input type="text" name="lastName" placeholder="Last Name" class="w-full p-3 rounded-xl bg-gray-50 dark:bg-gray-700 border-transparent focus:border-secondary outline-none dark:text-white" required>
+                            </div>
+                            <input type="email" name="email" placeholder="Email Address" class="w-full p-3 rounded-xl bg-gray-50 dark:bg-gray-700 border-transparent focus:border-secondary outline-none dark:text-white" required>
+                            <input type="tel" name="phone" placeholder="Phone Number (+91)" class="w-full p-3 rounded-xl bg-gray-50 dark:bg-gray-700 border-transparent focus:border-secondary outline-none dark:text-white" required>
+                            
+                            <h3 class="text-lg font-bold text-gray-800 dark:text-white mb-2 mt-6">Shipping Address</h3>
+                            <textarea name="address" placeholder="Street Address" rows="2" class="w-full p-3 rounded-xl bg-gray-50 dark:bg-gray-700 border-transparent focus:border-secondary outline-none dark:text-white resize-none" required></textarea>
+                            <div class="grid grid-cols-2 gap-4">
+                                <input type="text" name="city" placeholder="City" class="w-full p-3 rounded-xl bg-gray-50 dark:bg-gray-700 border-transparent focus:border-secondary outline-none dark:text-white" required>
+                                <input type="text" name="state" placeholder="State" class="w-full p-3 rounded-xl bg-gray-50 dark:bg-gray-700 border-transparent focus:border-secondary outline-none dark:text-white" required>
+                            </div>
+                            <div class="grid grid-cols-2 gap-4">
+                                <input type="text" name="pincode" placeholder="PIN Code" pattern="[0-9]{6}" class="w-full p-3 rounded-xl bg-gray-50 dark:bg-gray-700 border-transparent focus:border-secondary outline-none dark:text-white" required>
+                                <input type="text" name="country" value="India" class="w-full p-3 rounded-xl bg-gray-50 dark:bg-gray-700 border-transparent focus:border-secondary outline-none dark:text-white" readonly>
+                            </div>
+                            
+                            <h3 class="text-lg font-bold text-gray-800 dark:text-white mb-2 mt-6">Payment Method</h3>
+                            <div class="space-y-3">
+                                <label class="flex items-center gap-3 p-4 bg-gray-50 dark:bg-gray-700 rounded-xl cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors">
+                                    <input type="radio" name="payment" value="razorpay" class="w-4 h-4 text-primary" checked>
+                                    <div class="flex-1">
+                                        <span class="font-bold text-gray-800 dark:text-white">Online Payment (Razorpay)</span>
+                                        <p class="text-xs text-gray-500 dark:text-gray-400">Credit Card, Debit Card, UPI, Net Banking</p>
+                                    </div>
+                                    <i class="fas fa-credit-card text-primary"></i>
+                                </label>
+                                <label class="flex items-center gap-3 p-4 bg-gray-50 dark:bg-gray-700 rounded-xl cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors">
+                                    <input type="radio" name="payment" value="cod" class="w-4 h-4 text-primary">
+                                    <div class="flex-1">
+                                        <span class="font-bold text-gray-800 dark:text-white">Cash on Delivery</span>
+                                        <p class="text-xs text-gray-500 dark:text-gray-400">Pay when you receive</p>
+                                    </div>
+                                    <i class="fas fa-money-bill-wave text-primary"></i>
+                                </label>
+                            </div>
+                        </form>
+                    </div>
+                    
+                    <!-- Right: Order Summary -->
+                    <div>
+                        <h3 class="text-lg font-bold text-gray-800 dark:text-white mb-4">Order Summary</h3>
+                        <div class="bg-gray-50 dark:bg-gray-900 rounded-2xl p-6 sticky top-6">
+                            <div id="checkout-items" class="space-y-3 mb-4 max-h-60 overflow-y-auto"></div>
+                            <div class="border-t border-gray-200 dark:border-gray-700 pt-4 space-y-2">
+                                <div class="flex justify-between text-sm">
+                                    <span class="text-gray-600 dark:text-gray-400">Subtotal</span>
+                                    <span id="checkout-subtotal" class="font-bold text-gray-800 dark:text-white">₹0</span>
+                                </div>
+                                <div class="flex justify-between text-sm">
+                                    <span class="text-gray-600 dark:text-gray-400">Shipping</span>
+                                    <span class="font-bold text-green-600">FREE</span>
+                                </div>
+                                <div class="flex justify-between text-sm">
+                                    <span class="text-gray-600 dark:text-gray-400">Tax (GST 18%)</span>
+                                    <span id="checkout-tax" class="font-bold text-gray-800 dark:text-white">₹0</span>
+                                </div>
+                                <div class="border-t border-gray-300 dark:border-gray-600 pt-3 mt-3 flex justify-between">
+                                    <span class="text-lg font-bold text-gray-800 dark:text-white">Total</span>
+                                    <span id="checkout-total" class="text-2xl font-bold text-primary dark:text-secondary">₹0</span>
+                                </div>
+                            </div>
+                            <button onclick="processPayment()" class="w-full mt-6 bg-primary dark:bg-secondary text-white dark:text-gray-900 font-bold py-4 rounded-xl hover:bg-emerald-900 dark:hover:bg-emerald-400 transition-all flex items-center justify-center gap-2 shadow-lg">
+                                <i class="fas fa-lock"></i>
+                                <span>Place Order</span>
+                            </button>
+                            <p class="text-xs text-center text-gray-500 dark:text-gray-400 mt-3">
+                                <i class="fas fa-shield-alt"></i> Secure checkout powered by Razorpay
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
+        // Cart Management
+        let cart = JSON.parse(localStorage.getItem('cart')) || [];
+        
+        function updateCartUI() {
+            const badge = document.getElementById('cart-count');
+            const itemsContainer = document.getElementById('cart-items');
+            const footer = document.getElementById('cart-footer');
+            const totalEl = document.getElementById('cart-total');
+            
+            badge.innerText = cart.length;
+            
+            if (cart.length === 0) {
+                itemsContainer.innerHTML = '<p class="text-center text-gray-400 py-10">Your cart is empty</p>';
+                footer.classList.add('hidden');
+                return;
+            }
+            
+            const total = cart.reduce((sum, item) => sum + item.price, 0);
+            totalEl.innerText = `₹${total.toLocaleString()}`;
+            footer.classList.remove('hidden');
+            
+            itemsContainer.innerHTML = cart.map((item, index) => `
+                <div class="flex items-center gap-4 p-4 bg-white dark:bg-gray-700 rounded-xl mb-3 border border-gray-100 dark:border-gray-600">
+                    <img src="${item.image}" alt="${item.name}" class="w-16 h-16 rounded-lg object-cover">
+                    <div class="flex-1">
+                        <h3 class="font-bold text-gray-800 dark:text-white">${item.name}</h3>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">₹${item.price.toLocaleString()}</p>
+                    </div>
+                    <button onclick="removeFromCart(${index})" class="text-red-400 hover:text-red-600 transition-colors p-2">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            `).join('');
+        }
+        
+        window.addToCart = (productId) => {
+            const product = window.currentProducts?.find(p => (p.id || p.name) === productId);
+            if (!product) return;
+            
+            cart.push({ 
+                id: product.id || product.name, 
+                name: product.name, 
+                price: product.price, 
+                image: product.image 
+            });
+            localStorage.setItem('cart', JSON.stringify(cart));
+            
+            const badge = document.getElementById('cart-count');
+            badge.innerText = cart.length;
+            badge.classList.add('animate-bounce');
+            setTimeout(() => badge.classList.remove('animate-bounce'), 1000);
+            
+            window.showToast(`${product.name} added to cart!`, "success");
+            updateCartUI();
+        };
+        
+        window.removeFromCart = (index) => {
+            cart.splice(index, 1);
+            localStorage.setItem('cart', JSON.stringify(cart));
+            updateCartUI();
+            window.showToast("Item removed", "success");
+        };
+        
+        window.openCart = () => {
+            updateCartUI();
+            document.getElementById('cart-modal').classList.remove('hidden');
+            setTimeout(() => document.getElementById('cart-modal').classList.remove('opacity-0'), 10);
+        };
+        
+        window.closeCart = () => {
+            document.getElementById('cart-modal').classList.add('opacity-0');
+            setTimeout(() => document.getElementById('cart-modal').classList.add('hidden'), 500);
+        };
+        
+        window.handleCheckout = () => {
+            if (cart.length === 0) return;
+            
+            // Populate checkout summary
+            const subtotal = cart.reduce((sum, item) => sum + item.price, 0);
+            const tax = Math.round(subtotal * 0.18);
+            const total = subtotal + tax;
+            
+            document.getElementById('checkout-subtotal').innerText = `₹${subtotal.toLocaleString()}`;
+            document.getElementById('checkout-tax').innerText = `₹${tax.toLocaleString()}`;
+            document.getElementById('checkout-total').innerText = `₹${total.toLocaleString()}`;
+            
+            document.getElementById('checkout-items').innerHTML = cart.map(item => `
+                <div class="flex items-center gap-3 pb-3 border-b border-gray-200 dark:border-gray-700">
+                    <img src="${item.image}" alt="${item.name}" class="w-12 h-12 rounded-lg object-cover">
+                    <div class="flex-1">
+                        <p class="font-bold text-sm text-gray-800 dark:text-white">${item.name}</p>
+                        <p class="text-xs text-gray-500 dark:text-gray-400">₹${item.price.toLocaleString()}</p>
+                    </div>
+                </div>
+            `).join('');
+            
+            closeCart();
+            document.getElementById('checkout-modal').classList.remove('hidden');
+            setTimeout(() => document.getElementById('checkout-modal').classList.remove('opacity-0'), 10);
+        };
+        
+        window.closeCheckout = () => {
+            document.getElementById('checkout-modal').classList.add('opacity-0');
+            setTimeout(() => document.getElementById('checkout-modal').classList.add('hidden'), 500);
+        };
+        
+        window.processPayment = async () => {
+            const form = document.getElementById('checkout-form');
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+            
+            const formData = new FormData(form);
+            const paymentMethod = formData.get('payment');
+            const subtotal = cart.reduce((sum, item) => sum + item.price, 0);
+            const tax = Math.round(subtotal * 0.18);
+            const total = subtotal + tax;
+            
+            if (paymentMethod === 'razorpay') {
+                // Razorpay Integration
+                const options = {
+                    key: 'rzp_test_YOUR_KEY_HERE', // Replace with your Razorpay key
+                    amount: total * 100, // Razorpay expects amount in paise
+                    currency: 'INR',
+                    name: 'RechargEarth',
+                    description: 'Tree Planting Services',
+                    image: 'data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌱</text></svg>',
+                    handler: function(response) {
+                        handlePaymentSuccess(response, formData);
+                    },
+                    prefill: {
+                        name: `${formData.get('firstName')} ${formData.get('lastName')}`,
+                        email: formData.get('email'),
+                        contact: formData.get('phone')
+                    },
+                    theme: {
+                        color: '#064e3b'
+                    }
+                };
+                
+                if (typeof Razorpay !== 'undefined') {
+                    const rzp = new Razorpay(options);
+                    rzp.open();
+                } else {
+                    // Simulate payment for demo
+                    window.showToast("Demo Mode: Simulating payment...", "success");
+                    setTimeout(() => {
+                        handlePaymentSuccess({ razorpay_payment_id: 'demo_' + Date.now() }, formData);
+                    }, 2000);
+                }
+            } else {
+                // Cash on Delivery
+                handlePaymentSuccess({ payment_method: 'COD' }, formData);
+            }
+        };
+        
+        window.handlePaymentSuccess = async (paymentResponse, formData) => {
+            const subtotal = cart.reduce((sum, item) => sum + item.price, 0);
+            const tax = Math.round(subtotal * 0.18);
+            const total = subtotal + tax;
+            
+            const orderData = {
+                orderId: 'RCE' + Date.now(),
+                items: cart.map(item => ({
+                    id: item.id,
+                    name: item.name,
+                    price: item.price,
+                    image: item.image
+                })),
+                customer: {
+                    firstName: formData.get('firstName'),
+                    lastName: formData.get('lastName'),
+                    email: formData.get('email'),
+                    phone: formData.get('phone'),
+                    address: formData.get('address'),
+                    city: formData.get('city'),
+                    state: formData.get('state'),
+                    pincode: formData.get('pincode'),
+                    country: formData.get('country')
+                },
+                pricing: {
+                    subtotal: subtotal,
+                    tax: tax,
+                    total: total
+                },
+                payment: {
+                    method: formData.get('payment'),
+                    status: paymentResponse.razorpay_payment_id ? 'paid' : 'pending',
+                    transactionId: paymentResponse.razorpay_payment_id || paymentResponse.payment_method || null
+                },
+                status: 'confirmed',
+                timestamp: new Date().toISOString(),
+                createdAt: new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })
+            };
+            
+            try {
+                // Save order to Firebase
+                if (db) {
+                    const { collection, addDoc, serverTimestamp } = await import('https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js');
+                    
+                    // Save to orders collection
+                    await addDoc(collection(db, 'orders'), {
+                        ...orderData,
+                        firestoreTimestamp: serverTimestamp()
+                    });
+                    
+                    // Send email notification via Firebase trigger email extension
+                    await addDoc(collection(db, 'mail'), {
+                        to: ['rechargearthorganization@gmail.com'],
+                        message: {
+                            subject: `🌱 New Order #${orderData.orderId}`,
+                            html: generateOrderEmailHTML(orderData),
+                            text: generateOrderEmailText(orderData)
+                        }
+                    });
+                    
+                    // Send customer confirmation
+                    await addDoc(collection(db, 'mail'), {
+                        to: [orderData.customer.email],
+                        message: {
+                            subject: `Order Confirmation #${orderData.orderId} - RechargEarth`,
+                            html: generateCustomerEmailHTML(orderData),
+                            text: `Thank you for your order! Your order ID is ${orderData.orderId}.`
+                        }
+                    });
+                    
+                    window.showToast("✅ Order saved and email notifications sent!", "success");
+                }
+            } catch (error) {
+                console.error('Error saving order:', error);
+                window.showToast("⚠️ Order saved locally, email pending", "success");
+            }
+            
+            // Save to localStorage as backup
+            const orders = JSON.parse(localStorage.getItem('orders') || '[]');
+            orders.push(orderData);
+            localStorage.setItem('orders', JSON.stringify(orders));
+            
+            // Clear cart
+            cart = [];
+            localStorage.setItem('cart', JSON.stringify(cart));
+            updateCartUI();
+            
+            // Show success
+            closeCheckout();
+            window.showToast(`🎉 Order placed successfully! Order ID: ${orderData.orderId}`, "success");
+            
+            setTimeout(() => {
+                window.showToast(`📧 Confirmation sent to ${orderData.customer.email}`, "success");
+            }, 1500);
+        };
+        
+        function generateOrderEmailHTML(order) {
+            return `
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <style>
+                        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+                        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+                        .header { background: #064e3b; color: white; padding: 20px; text-align: center; }
+                        .content { background: #f9f9f9; padding: 20px; }
+                        .order-item { border-bottom: 1px solid #ddd; padding: 10px 0; }
+                        .total { font-size: 18px; font-weight: bold; color: #064e3b; }
+                        table { width: 100%; border-collapse: collapse; }
+                        td { padding: 8px; }
+                        .label { font-weight: bold; width: 150px; }
+                    </style>
+                </head>
+                <body>
+                    <div class="container">
+                        <div class="header">
+                            <h1>🌱 New Order Received</h1>
+                        </div>
+                        <div class="content">
+                            <h2>Order #${order.orderId}</h2>
+                            <p><strong>Date:</strong> ${order.createdAt}</p>
+                            <p><strong>Status:</strong> <span style="color: green;">✓ ${order.status.toUpperCase()}</span></p>
+                            
+                            <h3>Customer Information</h3>
+                            <table>
+                                <tr><td class="label">Name:</td><td>${order.customer.firstName} ${order.customer.lastName}</td></tr>
+                                <tr><td class="label">Email:</td><td>${order.customer.email}</td></tr>
+                                <tr><td class="label">Phone:</td><td>${order.customer.phone}</td></tr>
+                                <tr><td class="label">Address:</td><td>${order.customer.address}<br>${order.customer.city}, ${order.customer.state} - ${order.customer.pincode}<br>${order.customer.country}</td></tr>
+                            </table>
+                            
+                            <h3>Order Items</h3>
+                            ${order.items.map(item => `
+                                <div class="order-item">
+                                    <strong>${item.name}</strong><br>
+                                    <span style="color: #666;">₹${item.price.toLocaleString()}</span>
+                                </div>
+                            `).join('')}
+                            
+                            <h3>Payment Details</h3>
+                            <table>
+                                <tr><td class="label">Subtotal:</td><td>₹${order.pricing.subtotal.toLocaleString()}</td></tr>
+                                <tr><td class="label">Tax (GST 18%):</td><td>₹${order.pricing.tax.toLocaleString()}</td></tr>
+                                <tr><td class="label">Shipping:</td><td style="color: green;">FREE</td></tr>
+                                <tr><td class="label">Total:</td><td class="total">₹${order.pricing.total.toLocaleString()}</td></tr>
+                                <tr><td class="label">Payment Method:</td><td>${order.payment.method === 'cod' ? 'Cash on Delivery' : 'Online Payment'}</td></tr>
+                                <tr><td class="label">Payment Status:</td><td>${order.payment.status.toUpperCase()}</td></tr>
+                                ${order.payment.transactionId ? `<tr><td class="label">Transaction ID:</td><td>${order.payment.transactionId}</td></tr>` : ''}
+                            </table>
+                            
+                            <p style="margin-top: 20px; padding: 15px; background: #fff3cd; border-left: 4px solid #ffc107;">
+                                <strong>Action Required:</strong> Please process this order and update the customer.
+                            </p>
+                        </div>
+                    </div>
+                </body>
+                </html>
+            `;
+        }
+        
+        function generateOrderEmailText(order) {
+            return `
+                NEW ORDER RECEIVED - RechargEarth
+                
+                Order ID: ${order.orderId}
+                Date: ${order.createdAt}
+                Status: ${order.status.toUpperCase()}
+                
+                CUSTOMER INFORMATION
+                Name: ${order.customer.firstName} ${order.customer.lastName}
+                Email: ${order.customer.email}
+                Phone: ${order.customer.phone}
+                Address: ${order.customer.address}, ${order.customer.city}, ${order.customer.state} - ${order.customer.pincode}, ${order.customer.country}
+                
+                ORDER ITEMS
+                ${order.items.map(item => `- ${item.name}: ₹${item.price.toLocaleString()}`).join('\n')}
+                
+                PAYMENT DETAILS
+                Subtotal: ₹${order.pricing.subtotal.toLocaleString()}
+                Tax (GST 18%): ₹${order.pricing.tax.toLocaleString()}
+                Total: ₹${order.pricing.total.toLocaleString()}
+                Payment Method: ${order.payment.method === 'cod' ? 'Cash on Delivery' : 'Online Payment'}
+                Payment Status: ${order.payment.status.toUpperCase()}
+                ${order.payment.transactionId ? `Transaction ID: ${order.payment.transactionId}` : ''}
+            `;
+        }
+        
+        function generateCustomerEmailHTML(order) {
+            return `
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <style>
+                        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+                        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+                        .header { background: linear-gradient(135deg, #064e3b 0%, #10b981 100%); color: white; padding: 30px; text-align: center; }
+                        .content { background: white; padding: 30px; border: 1px solid #e0e0e0; }
+                        .order-item { background: #f9f9f9; padding: 15px; margin: 10px 0; border-radius: 8px; }
+                        .total-box { background: #064e3b; color: white; padding: 20px; text-align: center; border-radius: 8px; margin: 20px 0; }
+                        .footer { text-align: center; padding: 20px; color: #666; font-size: 12px; }
+                    </style>
+                </head>
+                <body>
+                    <div class="container">
+                        <div class="header">
+                            <h1>🌱 Thank You for Your Order!</h1>
+                            <p>You're making the planet greener</p>
+                        </div>
+                        <div class="content">
+                            <h2>Order Confirmation</h2>
+                            <p>Hi ${order.customer.firstName},</p>
+                            <p>Thank you for choosing RechargEarth! Your order has been confirmed and we'll process it shortly.</p>
+                            
+                            <p><strong>Order ID:</strong> ${order.orderId}</p>
+                            <p><strong>Order Date:</strong> ${order.createdAt}</p>
+                            
+                            <h3>Your Items</h3>
+                            ${order.items.map(item => `
+                                <div class="order-item">
+                                    <strong>${item.name}</strong><br>
+                                    <span style="color: #10b981;">₹${item.price.toLocaleString()}</span>
+                                </div>
+                            `).join('')}
+                            
+                            <div class="total-box">
+                                <h3 style="margin: 0;">Total Amount</h3>
+                                <h1 style="margin: 10px 0;">₹${order.pricing.total.toLocaleString()}</h1>
+                                <p style="margin: 0; opacity: 0.9;">(Inclusive of GST)</p>
+                            </div>
+                            
+                            <h3>Shipping Address</h3>
+                            <p>
+                                ${order.customer.firstName} ${order.customer.lastName}<br>
+                                ${order.customer.address}<br>
+                                ${order.customer.city}, ${order.customer.state} - ${order.customer.pincode}<br>
+                                ${order.customer.country}<br>
+                                Phone: ${order.customer.phone}
+                            </p>
+                            
+                            <p style="background: #e8f5e9; padding: 15px; border-radius: 8px; border-left: 4px solid #10b981;">
+                                <strong>What's Next?</strong><br>
+                                We'll send you updates about your tree planting progress. You'll receive GPS coordinates and photos once your trees are planted!
+                            </p>
+                        </div>
+                        <div class="footer">
+                            <p>RechargEarth | rechargearthorganization@gmail.com</p>
+                            <p>Making the planet greener, one tree at a time 🌍</p>
+                        </div>
+                    </div>
+                </body>
+                </html>
+            `;
+        }
+        
         // UI Logic - Moved outside module to ensure it runs even if Firebase fails
         window.showToast = (msg, type) => { const t = document.createElement('div'); t.className = 'toast show'; t.innerHTML = `<i class="fas fa-${type==='success'?'check-circle text-secondary':'exclamation-circle text-red-500'} text-xl"></i><div><p class="text-sm text-gray-700 dark:text-gray-200 font-medium">${msg}</p></div>`; document.getElementById('toast-container').appendChild(t); setTimeout(() => { t.classList.remove('show'); t.classList.add('hide'); setTimeout(()=>t.remove(), 300); }, 3500); };
         window.openPledgeModal = () => { document.getElementById('pledge-modal').classList.remove('hidden'); setTimeout(() => document.getElementById('pledge-modal').classList.remove('opacity-0'), 10); };
         window.closePledgeModal = () => { document.getElementById('pledge-modal').classList.add('opacity-0'); setTimeout(() => document.getElementById('pledge-modal').classList.add('hidden'), 500); };
         window.openAuthModal = () => { document.getElementById('auth-modal').classList.remove('hidden'); setTimeout(() => document.getElementById('auth-modal').classList.remove('opacity-0'), 10); };
         window.closeAuthModal = () => { document.getElementById('auth-modal').classList.add('opacity-0'); setTimeout(() => document.getElementById('auth-modal').classList.add('hidden'), 500); };
-        window.addToCart = () => { const b = document.getElementById('cart-count'); b.innerText = parseInt(b.innerText)+1; b.classList.add('animate-bounce'); setTimeout(()=>b.classList.remove('animate-bounce'), 1000); window.showToast("Added to cart"); };
-        window.openCart = () => window.showToast("Checkout coming soon!", "success");
         window.toggleMobileMenu = () => { document.getElementById('mobile-menu').classList.toggle('hidden'); };
         window.toggleTheme = () => { const h = document.documentElement; if(h.classList.contains('dark')){h.classList.remove('dark');localStorage.setItem('theme','light');}else{h.classList.add('dark');localStorage.setItem('theme','dark');} };
         window.toggleAuthMode = (mode) => { if(mode === 'login') { document.getElementById('login-form').classList.remove('hidden'); document.getElementById('signup-form').classList.add('hidden'); } else { document.getElementById('login-form').classList.add('hidden'); document.getElementById('signup-form').classList.remove('hidden'); } };
@@ -434,6 +956,7 @@
             if (!sessionStorage.getItem('pledgeSeen')) { setTimeout(() => { window.openPledgeModal(); sessionStorage.setItem('pledgeSeen', 'true'); }, 10000); }
             const savedTheme = localStorage.getItem('theme'); if (savedTheme === 'dark') document.documentElement.classList.add('dark');
             document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+            updateCartUI(); // Initialize cart on page load
         });
     </script>
 
@@ -450,24 +973,24 @@
           projectId: "rechargearth-d1f7d",
           storageBucket: "rechargearth-d1f7d.firebasestorage.app",
           messagingSenderId: "42202126738",
-          appId: "1:42202126738:web:4f7a58287f8f863e7e094b",
-          measurementId: "G-L16KHXPKMH"
+          appId: "1:42202126738:web:e22337541ff5a7567e094b",
+          measurementId: "G-KDJ3WFSTN8"
         };
         
-        const appId = 'default-app-id';
+        const appId = '1:42202126738:web:e22337541ff5a7567e094b';
         
         let db, auth, analytics;
         const googleProvider = new GoogleAuthProvider();
         const ADMIN_EMAIL = "admin@rechargearth.com"; 
 
-        // Default Products (Fallback)
+        // Default Products (Fallback) - Sorted by price (low to high)
         const defaultProducts = [
-            { name: "Tree Planting", price: 500, desc: "Plant a native tree in a deforested area.", image: "https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?auto=format&fit=crop&w=800&q=80" },
-            { name: "Birthday Park", price: 223, desc: "Celebrate your special day by gifting the earth.", image: "https://images.unsplash.com/photo-1530968464165-7a1861cbaf9f?auto=format&fit=crop&w=800&q=80", featured: true },
-            { name: "Real-Time Tracking", price: 222, desc: "GPS coordinates and photo updates.", image: "https://images.unsplash.com/photo-1569336415962-a4bd9f69cd83?auto=format&fit=crop&w=800&q=80" },
-            { name: "Corporate CSR", price: 1123, desc: "Solutions for carbon footprint.", image: "https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=800&q=80" },
-            { name: "School Programs", price: 5000, desc: "Educational workshops and drives.", image: "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?auto=format&fit=crop&w=800&q=80" },
-            { name: "Urban Greening", price: 1000, desc: "Micro-forests in city limits.", image: "https://images.unsplash.com/photo-1416879595882-3373a0480b5b?auto=format&fit=crop&w=800&q=80" }
+            { name: "Birthday Park", price: 223, desc: "Celebrate your special day by gifting the earth.", image: "https://images.unsplash.com/photo-1464207687429-7505649dae38?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80", featured: true },
+            { name: "Tree Planting", price: 500, desc: "Plant a native tree in a deforested area.", image: "https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" },
+            { name: "Urban Greening Kit", price: 1000, desc: "Micro-forests in city limits.", image: "https://images.unsplash.com/photo-1466692476868-aef1dfb1e735?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" },
+            { name: "Nurture a Tree", price: 2000, desc: "One year maintenance and care for your planted tree.", image: "https://images.unsplash.com/photo-1425913397330-cf8af2ff40a1?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" },
+            { name: "School Programs", price: 5000, desc: "Educational workshops and drives.", image: "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" },
+            { name: "Corporate CSR", price: 10000, desc: "Solutions for carbon footprint.", image: "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" }
         ];
 
         // Initialize Firebase
@@ -504,34 +1027,38 @@
         async function loadProducts() {
             const grid = document.getElementById('product-grid');
             if (!grid) return;
-            grid.innerHTML = '<div class="col-span-3 text-center py-10"><i class="fas fa-spinner fa-spin text-2xl text-primary"></i></div>';
+            
+            // Show products immediately without spinner
+            renderProducts(defaultProducts);
 
-            if (!db) { renderProducts(defaultProducts); return; }
+            if (!db) return;
 
             try {
-                 const q = query(collection(db, 'artifacts', appId, 'public', 'data', 'products'));
+                 const q = query(collection(db, 'products'));
                  const snapshot = await getDocs(q);
                  let products = [];
                  
-                 if (snapshot.empty) {
-                     products = defaultProducts;
-                 } else {
+                 if (!snapshot.empty) {
                      snapshot.forEach(doc => products.push({ id: doc.id, ...doc.data() }));
+                     renderProducts(products); // Update with DB products if available
                  }
-                 renderProducts(products);
             } catch (e) {
                 console.error("Error loading products:", e);
-                renderProducts(defaultProducts); // Fallback
+                // Keep default products on error
             }
         }
 
         function renderProducts(products) {
             const grid = document.getElementById('product-grid');
             if (!grid) return;
+            
+            // Store products globally for cart access
+            window.currentProducts = products;
+            
             grid.innerHTML = products.map(p => `
                 <div class="product-card bg-white dark:bg-gray-800 rounded-3xl overflow-hidden shadow-sm border border-gray-100 dark:border-gray-700 relative flex flex-col h-full group reveal">
                     ${p.featured ? '<span class="absolute top-4 right-4 bg-accent text-white text-[10px] font-bold px-3 py-1 rounded-full z-10 shadow-sm uppercase tracking-wider">Best Value</span>' : ''}
-                    <div class="h-56 overflow-hidden relative"><img src="${p.image}" alt="${p.name}" width="800" height="600" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" loading="lazy"></div>
+                    <div class="h-56 overflow-hidden relative bg-gray-100 dark:bg-gray-700"><img src="${p.image}" alt="${p.name}" width="800" height="600" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" loading="eager" onerror="this.src='https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'"></div>
                     <div class="p-8 flex flex-col flex-1">
                         <h3 class="text-xl font-bold text-primary dark:text-white mb-2 font-serif">${p.name}</h3>
                         <p class="text-gray-500 dark:text-gray-400 text-sm mb-6 flex-1 leading-relaxed">${p.desc}</p>
@@ -575,7 +1102,7 @@
             };
 
             try {
-                await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'products'), newProduct);
+                await addDoc(collection(db, 'products'), newProduct);
                 window.showToast("Product Added Successfully", "success");
                 e.target.reset();
                 loadProducts(); // Refresh main grid
@@ -587,7 +1114,7 @@
             if (!confirm("Delete this product?")) return;
             if (!auth) return;
             try {
-                await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'products', id));
+                await deleteDoc(doc(db, 'products', id));
                 window.showToast("Product deleted", "success");
                 loadProducts();
             } catch (e) { window.showToast("Error deleting", "error"); }
@@ -597,7 +1124,7 @@
             if (!db) return;
             
             // Pledges Listener
-            const qPledges = query(collection(db, 'artifacts', appId, 'public', 'data', 'pledges'), orderBy("timestamp", "desc"));
+            const qPledges = query(collection(db, 'pledges'), orderBy("timestamp", "desc"));
             onSnapshot(qPledges, (snap) => {
                 const pledges = [];
                 snap.forEach(doc => pledges.push({ id: doc.id, ...doc.data() }));
@@ -607,7 +1134,7 @@
             });
 
             // Products Listener (For Admin List)
-            const qProducts = query(collection(db, 'artifacts', appId, 'public', 'data', 'products'));
+            const qProducts = query(collection(db, 'products'));
             onSnapshot(qProducts, (snap) => {
                 const products = [];
                 snap.forEach(doc => products.push({ id: doc.id, ...doc.data() }));
@@ -637,12 +1164,30 @@
                 const row = document.createElement('tr');
                 row.className = "hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors";
                 const dateStr = data.timestamp ? new Date(data.timestamp.seconds * 1000).toLocaleDateString() : 'N/A';
-                row.innerHTML = `<td class="p-5 text-gray-500 dark:text-gray-400 font-mono text-xs">${dateStr}</td><td class="p-5"><div class="font-bold text-primary dark:text-white">${data.fullName}</div></td><td class="p-5 text-gray-600 dark:text-gray-300 text-xs">${data.email}</td><td class="p-5 text-right"><button onclick="window.deletePledge('${data.id}')" class="text-red-400 hover:text-red-600 transition-colors"><i class="fas fa-trash"></i></button></td>`;
+                row.innerHTML = `
+                    <td class="p-5 text-gray-500 dark:text-gray-400 font-mono text-xs">${dateStr}</td>
+                    <td class="p-5">
+                        <div class="font-bold text-primary dark:text-white">${data.fullName}</div>
+                        <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                            <i class="fas fa-birthday-cake mr-1"></i>${data.birthday || 'N/A'}
+                        </div>
+                    </td>
+                    <td class="p-5 text-gray-600 dark:text-gray-300">
+                        <div class="text-sm">${data.email}</div>
+                        <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                            <i class="fas fa-phone mr-1"></i>${data.phone || 'N/A'}
+                        </div>
+                    </td>
+                    <td class="p-5 text-right">
+                        <button onclick="window.deletePledge('${data.id}')" class="text-red-400 hover:text-red-600 transition-colors">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>`;
                 tbody.appendChild(row);
             });
         }
 
-        window.deletePledge = async (id) => { if (confirm("Delete pledge?")) { try { await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'pledges', id)); window.showToast("Deleted", "success"); } catch(e){ window.showToast("Error", "error"); } } };
+        window.deletePledge = async (id) => { if (confirm("Delete pledge?")) { try { await deleteDoc(doc(db, 'pledges', id)); window.showToast("Deleted", "success"); } catch(e){ console.error(e); window.showToast("Error: " + e.message, "error"); } } };
 
         // Auth State Handler
         onAuthStateChanged(auth, (user) => {
@@ -730,22 +1275,43 @@
             e.preventDefault();
             const btn = e.target.querySelector('button');
             const old = btn.innerHTML;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...'; btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...'; 
+            btn.disabled = true;
             
             const firstName = sanitizeHTML(e.target.firstName.value);
             const lastName = sanitizeHTML(e.target.lastName.value);
             const email = sanitizeHTML(e.target.email.value);
             const phone = sanitizeHTML(e.target.phone.value);
+            const birthday = sanitizeHTML(e.target.birthday.value);
+
+            console.log('Attempting to save pledge...', { firstName, lastName, email, phone, birthday });
+            
+            if (!db) {
+                window.showToast("Database not initialized. Check console.", 'error');
+                btn.innerHTML = old; 
+                btn.disabled = false;
+                return;
+            }
 
             try {
-                await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'pledges'), {
-                    firstName: firstName, lastName: lastName, fullName: `${firstName} ${lastName}`, email: email, phone: phone, birthday: e.target.birthday.value, timestamp: serverTimestamp()
+                const docRef = await addDoc(collection(db, 'pledges'), {
+                    firstName, lastName, fullName: `${firstName} ${lastName}`, 
+                    email, phone, birthday, timestamp: serverTimestamp()
                 });
+                console.log('Pledge saved with ID:', docRef.id);
                 window.showToast("Welcome to the family!", 'success');
                 document.getElementById('modal-form-container').classList.add('hidden');
                 document.getElementById('modal-success').classList.remove('hidden');
                 document.getElementById('modal-success').classList.add('flex');
-            } catch(err) { window.showToast("Error saving", 'error'); } finally { btn.innerHTML = old; btn.disabled = false; }
+                e.target.reset();
+            } catch(err) { 
+                console.error('Error saving pledge:', err);
+                window.showToast("Error: " + err.message, 'error'); 
+            } finally { 
+                btn.innerHTML = old; 
+                btn.disabled = false; 
+            }
+        };
         };
 
         initAuth(); 
