@@ -116,8 +116,8 @@
 
     <div id="toast-container"></div>
 
-    <!-- ADMIN DASHBOARD -->
-    <div id="admin-panel" class="fixed inset-0 z-[120] bg-gray-50 dark:bg-gray-900 hidden flex-col animate-[fadeIn_0.3s_ease-out]">
+    <!-- ADMIN DASHBOARD - REMOVED, Using Google Sheets Instead -->
+    <div id="admin-panel" style="display:none;">
         <div class="bg-white dark:bg-gray-800 shadow-md border-b border-gray-200 dark:border-gray-700 p-4 flex justify-between items-center sticky top-0 z-20">
             <div class="flex items-center gap-4">
                 <div class="w-10 h-10 bg-primary text-white rounded-lg flex items-center justify-center shadow-lg"><i class="fas fa-leaf"></i></div>
@@ -295,10 +295,7 @@
                 <button onclick="toggleTheme()" class="relative transition-colors theme-toggle text-white hover:text-accent focus:outline-none hidden sm:inline-block" aria-label="Toggle Theme"><i class="fas fa-moon text-lg dark:hidden"></i><i class="fas fa-sun text-lg hidden dark:inline-block"></i></button>
                 <button class="relative transition-colors cart-icon text-white hover:text-accent focus:outline-none" onclick="openCart()" aria-label="Shopping Cart"><i class="fas fa-shopping-bag text-xl"></i><span id="cart-count" class="absolute -top-2 -right-2 bg-accent text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center font-bold shadow-sm">0</span></button>
                 
-                <!-- Secure Admin Link -->
-                <div id="admin-trigger" class="hidden">
-                    <button onclick="document.getElementById('admin-panel').classList.add('open')" class="text-accent nav-text font-bold text-xs uppercase border border-accent rounded px-2 py-1 hover:bg-accent hover:text-white transition-all">Admin</button>
-                </div>
+                <!-- Admin Link Removed - Using Google Sheets -->
                 
                 <!-- Auth UI Container -->
                 <div id="auth-ui-container" class="hidden md:block">
@@ -402,7 +399,7 @@
                 <div><h4 class="text-lg font-bold mb-6 text-accent">Contact</h4><ul class="space-y-4 text-sm text-gray-300"><li class="flex items-start gap-3"><i class="fas fa-map-marker-alt mt-1"></i><span>KIIT TBI, CAMPUS 11<br>KIIT University, BHUBNESHWAR</span></li><li class="flex items-center gap-3"><i class="fas fa-envelope"></i><span>rechargearthorganization@gmail.com</span></li></ul></div>
                 <div class="col-span-1 md:col-span-2"><h4 class="text-lg font-bold mb-6 text-accent">Newsletter</h4><form onsubmit="event.preventDefault(); showToast('Subscribed!', 'success')" class="flex gap-3"><input type="email" placeholder="Enter your email" class="bg-white/10 border border-white/10 rounded-xl px-4 py-3 text-sm text-white w-full focus:outline-none focus:ring-2 focus:ring-accent" required><button type="submit" class="bg-accent text-primary font-bold py-3 px-6 rounded-xl hover:bg-white transition-colors">Subscribe</button></form></div>
             </div>
-            <div class="border-t border-white/10 pt-8 flex justify-between items-center text-xs text-gray-400"><p>&copy; 2024 RechargEarth.</p><button onclick="document.getElementById('admin-panel').classList.add('open')" class="hover:text-white"><i class="fas fa-lock"></i> Admin</button></div>
+            <div class="border-t border-white/10 pt-8 flex justify-between items-center text-xs text-gray-400"><p>&copy; 2024 RechargEarth.</p><span class="hover:text-white"><i class="fas fa-leaf"></i> Data via Google Sheets</span></div>
         </div>
     </footer>
 
@@ -1119,505 +1116,14 @@
             document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
         }
 
-        /* --- ADMIN LOGIC --- */
-        window.switchAdminTab = (tab) => {
-            document.getElementById('view-pledges').classList.add('hidden');
-            document.getElementById('view-products').classList.add('hidden');
-            document.getElementById(`view-${tab}`).classList.remove('hidden');
-            
-            document.getElementById('tab-pledges').className = tab === 'pledges' ? "px-4 py-1.5 rounded-md text-sm font-bold bg-white dark:bg-gray-600 shadow-sm text-primary dark:text-white transition-all" : "px-4 py-1.5 rounded-md text-sm font-bold text-gray-500 dark:text-gray-400 hover:text-primary transition-all";
-            document.getElementById('tab-products').className = tab === 'products' ? "px-4 py-1.5 rounded-md text-sm font-bold bg-white dark:bg-gray-600 shadow-sm text-primary dark:text-white transition-all" : "px-4 py-1.5 rounded-md text-sm font-bold text-gray-500 dark:text-gray-400 hover:text-primary transition-all";
-        }
-
-        // Product Form State
-        let isEditingProduct = false;
-        let editingProductId = null;
-
-        window.cancelProductEdit = () => {
-            isEditingProduct = false;
-            editingProductId = null;
-            const form = document.getElementById('product-form');
-            form.reset();
-            document.getElementById('form-title').textContent = 'Add New Package';
-            document.getElementById('form-btn').innerHTML = '<i class="fas fa-plus-circle"></i> Add Product';
-            document.getElementById('cancel-btn').classList.add('hidden');
-            document.getElementById('form-btn').classList.remove('hidden');
-        };
-
-        window.handleAddProduct = async (e) => {
-            e.preventDefault();
-            if (!auth || auth.currentUser?.email !== ADMIN_EMAIL) { window.showToast("Unauthorized Action", "error"); return; }
-            
-            const btn = e.target.querySelector('button[type="submit"]');
-            const oldText = btn.innerHTML;
-            btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> ' + (isEditingProduct ? 'Updating...' : 'Adding...');
-            btn.disabled = true;
-
-            // Sanitize
-            const name = sanitizeHTML(e.target.name.value);
-            const desc = sanitizeHTML(e.target.desc.value);
-            const image = sanitizeHTML(e.target.image.value);
-            const price = Number(e.target.price.value);
-
-            if (price <= 0) {
-                window.showToast("Price must be greater than 0", "error");
-                btn.innerHTML = oldText;
-                btn.disabled = false;
-                return;
-            }
-
-            try {
-                if (isEditingProduct && editingProductId) {
-                    // Update existing product
-                    await updateDoc(doc(db, 'products', editingProductId), {
-                        name: name,
-                        price: price,
-                        image: image,
-                        desc: desc
-                    });
-                    window.showToast("Product Updated Successfully", "success");
-                    window.cancelProductEdit();
-                } else {
-                    // Add new product
-                    const newProduct = {
-                        name: name,
-                        price: price,
-                        image: image,
-                        desc: desc,
-                        timestamp: serverTimestamp()
-                    };
-                    await addDoc(collection(db, 'products'), newProduct);
-                    window.showToast("Product Added Successfully", "success");
-                    e.target.reset();
-                }
-                loadProducts(); // Refresh main grid
-            } catch (err) { 
-                window.showToast("Error: " + err.message, "error"); 
-                console.error(err);
-            }
-            finally { btn.innerHTML = oldText; btn.disabled = false; }
-        }
-
-        window.deleteProduct = async (id) => {
-            if (!confirm("Are you sure you want to delete this product?")) return;
-            if (!auth) return;
-            const btn = event?.target?.closest('button');
-            if (btn) btn.disabled = true;
-            try {
-                await deleteDoc(doc(db, 'products', id));
-                window.showToast("Product deleted successfully", "success");
-                loadProducts();
-            } catch (e) { 
-                window.showToast("Error deleting product: " + e.message, "error");
-                console.error(e);
-            } finally {
-                if (btn) btn.disabled = false;
-            }
-        }
-
-        window.editProduct = async (id) => {
-            if (!auth || auth.currentUser?.email !== ADMIN_EMAIL) { 
-                window.showToast("Unauthorized", "error"); 
-                return; 
-            }
-            
-            try {
-                const docSnap = await getDoc(doc(db, 'products', id));
-                if (!docSnap.exists()) {
-                    window.showToast("Product not found", "error");
-                    return;
-                }
-                
-                const product = docSnap.data();
-                const form = document.getElementById('product-form');
-                
-                // Set edit mode
-                isEditingProduct = true;
-                editingProductId = id;
-                
-                // Populate form with existing data
-                form.name.value = product.name || '';
-                form.price.value = product.price || '';
-                form.image.value = product.image || '';
-                form.desc.value = product.desc || '';
-                
-                // Update UI
-                document.getElementById('form-title').textContent = 'Edit Package';
-                document.getElementById('form-btn').innerHTML = '<i class="fas fa-save"></i> Update Product';
-                document.getElementById('cancel-btn').classList.remove('hidden');
-                
-                // Scroll to form
-                form.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                window.showToast("Edit mode enabled. Update the form and click 'Update Product'", "info");
-            } catch (err) {
-                window.showToast("Error loading product: " + err.message, "error");
-                console.error(err);
-            }
-        }
-
-        function setupAdminListeners() {
-            console.log('🔧 setupAdminListeners() CALLED');
-            console.log('📦 Database object:', db);
-            console.log('📦 Auth object:', auth);
-            
-            if (!db) {
-                console.error('❌ Database not initialized!');
-                const loadingState = document.getElementById('loading-state');
-                const emptyState = document.getElementById('empty-state');
-                if (loadingState) loadingState.style.display = 'none';
-                if (emptyState) emptyState.classList.remove('hidden');
-                return;
-            }
-            
-            console.log('✅ Database is initialized, proceeding...');
-            
-            // Show loading state initially
-            const loadingState = document.getElementById('loading-state');
-            const emptyState = document.getElementById('empty-state');
-            if (loadingState) {
-                loadingState.style.display = 'block';
-                console.log('✅ Loading state displayed');
-            }
-            if (emptyState) emptyState.classList.add('hidden');
-            
-            // CRITICAL FIX: Immediate fetch as primary method (more reliable than listener)
-            console.log('🚀 Starting IMMEDIATE FETCH of pledges...');
-            const qPledges2 = query(collection(db, 'pledges'));
-            getDocs(qPledges2).then(snap => {
-                console.log('✅ IMMEDIATE FETCH SUCCESS! Got', snap.size, 'pledges');
-                const pledges = [];
-                snap.forEach(doc => {
-                    const data = doc.data();
-                    console.log('📝 Pledge document:', doc.id, data);
-                    pledges.push({ id: doc.id, ...data });
-                });
-                console.log('📊 Total fetched pledges:', pledges.length);
-                console.log('📊 Pledges array:', pledges);
-                
-                if (pledges.length > 0) {
-                    console.log('✅ Calling renderAdminTable with', pledges.length, 'pledges');
-                    renderAdminTable(pledges);
-                } else {
-                    console.log('⚠️ No pledges found in Firestore');
-                    const loading = document.getElementById('loading-state');
-                    const empty = document.getElementById('empty-state');
-                    if (loading) loading.style.display = 'none';
-                    if (empty) {
-                        empty.style.display = 'block';
-                        empty.classList.remove('hidden');
-                    }
-                }
-            }).catch(err => {
-                console.error('❌ IMMEDIATE FETCH FAILED:', err);
-                console.error('Error details:', err.message, err.code);
-                const loading = document.getElementById('loading-state');
-                const empty = document.getElementById('empty-state');
-                if (loading) loading.style.display = 'none';
-                if (empty) {
-                    empty.style.display = 'block';
-                    empty.classList.remove('hidden');
-                }
-                window.showToast('Error loading pledges: ' + err.message, 'error');
-            });
-
-            // Pledges Listener (secondary, for real-time updates)
-            try {
-                console.log('🔔 Setting up onSnapshot listener for real-time updates...');
-                const qPledges = query(collection(db, 'pledges'), orderBy("timestamp", "desc"));
-                onSnapshot(qPledges, (snap) => {
-                    console.log('🔔 onSnapshot FIRED! Pledges count:', snap.size);
-                    const pledges = [];
-                    snap.forEach(doc => {
-                        pledges.push({ id: doc.id, ...doc.data() });
-                    });
-                    console.log('🔔 onSnapshot processed pledges:', pledges.length, pledges);
-                    renderAdminTable(pledges);
-                    const statPledges = document.getElementById('stat-total-pledges');
-                    const statCommunity = document.getElementById('stat-community');
-                    if (statPledges) statPledges.innerText = pledges.length;
-                    if (statCommunity) statCommunity.innerText = pledges.length + 1240;
-                }, (error) => {
-                    console.error('❌ onSnapshot ERROR:', error);
-                    console.error('Error code:', error.code);
-                    console.error('Error message:', error.message);
-                    const loadingState = document.getElementById('loading-state');
-                    const emptyState = document.getElementById('empty-state');
-                    if (loadingState) loadingState.style.display = 'none';
-                    if (emptyState) emptyState.classList.remove('hidden');
-                    window.showToast('Error loading pledges: ' + error.message, 'error');
-                });
-                console.log('✅ onSnapshot listener set up successfully');
-            } catch (error) {
-                console.error('❌ Error setting up pledges listener:', error);
-                const loadingState = document.getElementById('loading-state');
-                const emptyState = document.getElementById('empty-state');
-                if (loadingState) loadingState.style.display = 'none';
-                if (emptyState) emptyState.classList.remove('hidden');
-            }
-
-            // Products Listener (For Admin List)
-            try {
-                const qProducts = query(collection(db, 'products'));
-                onSnapshot(qProducts, (snap) => {
-                    const products = [];
-                    snap.forEach(doc => products.push({ id: doc.id, ...doc.data() }));
-                    const tbody = document.getElementById('admin-product-list');
-                    if (tbody) {
-                        if (products.length === 0) {
-                            tbody.innerHTML = '<tr><td colspan="3" class="p-6 text-center text-gray-400">No products yet. Add one to get started.</td></tr>';
-                        } else {
-                            tbody.innerHTML = products.map(p => `
-                                <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50">
-                                    <td class="p-4"><img src="${p.image}" alt="${p.name}" class="w-12 h-12 rounded-lg object-cover" onerror="this.src='https://via.placeholder.com/48'"></td>
-                                    <td class="p-4">
-                                        <div class="font-bold text-gray-800 dark:text-white">${p.name}</div>
-                                        <div class="text-xs text-gray-500 dark:text-gray-400">₹${p.price}</div>
-                                        <div class="text-xs text-gray-400 dark:text-gray-500 mt-1 line-clamp-2">${p.desc || 'No description'}</div>
-                                    </td>
-                                    <td class="p-4 text-right flex gap-3 justify-end">
-                                        <button onclick="window.editProduct('${p.id}')" class="text-blue-400 hover:text-blue-600 transition-colors" title="Edit">
-                                            <i class="fas fa-edit"></i>
-                                        </button>
-                                        <button onclick="window.deleteProduct('${p.id}')" class="text-red-400 hover:text-red-600 transition-colors" title="Delete">
-                                            <i class="fas fa-trash"></i>
-                                        </button>
-                                    </td>
-                                </tr>
-                            `).join('');
-                        }
-                    }
-                }, (error) => {
-                    console.error('Error fetching products:', error);
-                });
-            } catch (error) {
-                console.error('Error setting up products listener:', error);
-            }
-        }
+        /* --- ADMIN LOGIC REMOVED - Using Google Sheets Instead --- */
 
         // -------------------- COMMON LOGIC -------------------- //
         
         // Store pledges globally for export
         let globalPledges = [];
 
-        function renderAdminTable(pledges) {
-            console.log('renderAdminTable called with pledges:', pledges.length);
-            globalPledges = pledges; // Store for export
-            
-            const tbody = document.getElementById('pledge-table-body');
-            const loading = document.getElementById('loading-state');
-            const empty = document.getElementById('empty-state');
-            const table = document.querySelector('.overflow-x-auto table');
-            
-            // Verify elements exist
-            if (!tbody) { 
-                console.error('❌ pledge-table-body element not found'); 
-                return; 
-            }
-            if (!loading || !empty) { 
-                console.error('❌ Loading or empty state elements not found'); 
-                return; 
-            }
-            if (!table) {
-                console.error('❌ Table element not found');
-                return;
-            }
-            
-            console.log('✅ All required elements found');
-            
-            // Clear existing rows
-            tbody.innerHTML = '';
-            console.log('✅ Cleared existing tbody');
-            
-            // Handle empty pledges
-            if (pledges.length === 0) {
-                console.log('ℹ️  No pledges - showing empty state');
-                table.style.display = 'none';
-                loading.style.display = 'none';
-                empty.style.display = 'block';
-                return;
-            }
-            
-            // Hide loading and empty states
-            table.style.display = 'table';
-            loading.style.display = 'none';
-            empty.style.display = 'none';
-            console.log('✅ Hidden loading/empty states, showing table');
-            
-            // Populate table with pledge rows
-            pledges.forEach((data, index) => {
-                try {
-                    const row = document.createElement('tr');
-                    row.className = "hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors";
-                    const dateStr = data.timestamp ? new Date(data.timestamp.seconds * 1000).toLocaleDateString() : 'N/A';
-                    
-                    row.innerHTML = `
-                        <td class="p-5 text-gray-500 dark:text-gray-400 font-mono text-xs">${dateStr}</td>
-                        <td class="p-5">
-                            <div class="font-bold text-primary dark:text-white">${data.fullName || 'Unknown'}</div>
-                        </td>
-                        <td class="p-5 text-gray-600 dark:text-gray-300">
-                            <div class="text-sm"><i class="fas fa-birthday-cake mr-1"></i>${data.birthday || 'N/A'}</div>
-                        </td>
-                        <td class="p-5 text-gray-600 dark:text-gray-300">
-                            <div class="text-sm">${data.email || 'N/A'}</div>
-                            <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                                <i class="fas fa-phone mr-1"></i>${data.phone || 'N/A'}
-                            </div>
-                        </td>
-                        <td class="p-5 text-right flex gap-3 justify-end">
-                            <button onclick="window.editPledge('${data.id}')" class="text-blue-400 hover:text-blue-600 transition-colors" title="Edit">
-                                <i class="fas fa-edit"></i>
-                            </button>
-                            <button onclick="window.deletePledge('${data.id}')" class="text-red-400 hover:text-red-600 transition-colors" title="Delete">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </td>
-                    `;
-                    
-                    tbody.appendChild(row);
-                    console.log(`✅ Added pledge row ${index + 1}: ${data.fullName}`);
-                } catch (error) {
-                    console.error(`❌ Error rendering pledge row ${index}:`, error);
-                }
-            });
-
-    // Hide loading spinner and show table
-    if (loading) loading.style.display = 'none';
-    if (empty) empty.style.display = 'none';
-    if (table) table.style.display = 'block';
-    if (tbody) tbody.style.display = 'table-row-group';
-            
-            console.log(`✅ Successfully rendered ${pledges.length} pledge rows`);
-        }
-        
-        // Export to Excel function
-        window.exportToExcel = () => {
-            if (globalPledges.length === 0) {
-                window.showToast("No data to export", "error");
-                return;
-            }
-            
-            // Create CSV content
-            const headers = ['Date', 'First Name', 'Last Name', 'Full Name', 'Email', 'Phone', 'Birthday'];
-            const csvContent = [
-                headers.join(','),
-                ...globalPledges.map(pledge => {
-                    const date = pledge.timestamp ? new Date(pledge.timestamp.seconds * 1000).toLocaleDateString() : 'N/A';
-                    return [
-                        date,
-                        pledge.firstName || '',
-                        pledge.lastName || '',
-                        pledge.fullName || '',
-                        pledge.email || '',
-                        pledge.phone || '',
-                        pledge.birthday || ''
-                    ].map(field => `"${field}"`).join(',');
-                })
-            ].join('\n');
-            
-            // Create download
-            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement('a');
-            const url = URL.createObjectURL(blob);
-            link.setAttribute('href', url);
-            link.setAttribute('download', `pledges_${new Date().toISOString().split('T')[0]}.csv`);
-            link.style.visibility = 'hidden';
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            
-            window.showToast(`Exported ${globalPledges.length} pledges to Excel`, "success");
-        };
-
-        window.deletePledge = async (id) => { 
-            if (!confirm("Are you sure you want to delete this pledge?")) return;
-            try { 
-                await deleteDoc(doc(db, 'pledges', id)); 
-                window.showToast("Pledge deleted successfully", "success"); 
-            } catch(e){ 
-                console.error(e); 
-                window.showToast("Error deleting pledge: " + e.message, "error"); 
-            } 
-        };
-
-        window.editPledge = async (id) => {
-            if (!auth || auth.currentUser?.email !== ADMIN_EMAIL) {
-                window.showToast("Unauthorized", "error");
-                return;
-            }
-            
-            try {
-                const docSnap = await getDoc(doc(db, 'pledges', id));
-                if (!docSnap.exists()) {
-                    window.showToast("Pledge not found", "error");
-                    return;
-                }
-                
-                const pledge = docSnap.data();
-                
-                // Show edit form in a modal or inline editor
-                const editHTML = `
-                    <div id="edit-pledge-modal" class="fixed inset-0 z-[110] bg-black/50 flex items-center justify-center p-4 backdrop-blur-sm">
-                        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-md w-full p-6 animate-[slideUp_0.3s_ease-out]">
-                            <h3 class="text-xl font-bold text-gray-800 dark:text-white mb-4">Edit Pledge</h3>
-                            <form id="edit-pledge-form" class="space-y-4">
-                                <div>
-                                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Full Name</label>
-                                    <input type="text" id="edit-name" value="${pledge.fullName || ''}" class="w-full p-3 rounded-lg bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 focus:border-primary outline-none dark:text-white" required>
-                                </div>
-                                <div>
-                                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Email</label>
-                                    <input type="email" id="edit-email" value="${pledge.email || ''}" class="w-full p-3 rounded-lg bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 focus:border-primary outline-none dark:text-white" required>
-                                </div>
-                                <div>
-                                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Phone</label>
-                                    <input type="tel" id="edit-phone" value="${pledge.phone || ''}" class="w-full p-3 rounded-lg bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 focus:border-primary outline-none dark:text-white">
-                                </div>
-                                <div>
-                                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Birthday</label>
-                                    <input type="text" id="edit-birthday" value="${pledge.birthday || ''}" class="w-full p-3 rounded-lg bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 focus:border-primary outline-none dark:text-white" placeholder="MM/DD/YYYY">
-                                </div>
-                                <div class="flex gap-3">
-                                    <button type="button" onclick="document.getElementById('edit-pledge-modal').remove()" class="flex-1 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-white px-4 py-2 rounded-lg font-bold hover:bg-gray-300 transition-all">Cancel</button>
-                                    <button type="submit" class="flex-1 bg-primary text-white px-4 py-2 rounded-lg font-bold hover:bg-emerald-900 transition-all">Save Changes</button>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-                `;
-                
-                // Insert modal into DOM
-                document.body.insertAdjacentHTML('beforeend', editHTML);
-                
-                // Handle form submission
-                document.getElementById('edit-pledge-form').onsubmit = async (e) => {
-                    e.preventDefault();
-                    const modal = document.getElementById('edit-pledge-modal');
-                    const btn = modal.querySelector('button[type="submit"]');
-                    btn.disabled = true;
-                    
-                    try {
-                        await updateDoc(doc(db, 'pledges', id), {
-                            fullName: sanitizeHTML(document.getElementById('edit-name').value),
-                            email: sanitizeHTML(document.getElementById('edit-email').value),
-                            phone: sanitizeHTML(document.getElementById('edit-phone').value),
-                            birthday: sanitizeHTML(document.getElementById('edit-birthday').value)
-                        });
-                        
-                        window.showToast("Pledge updated successfully", "success");
-                        modal.remove();
-                    } catch (err) {
-                        window.showToast("Error updating pledge: " + err.message, "error");
-                    } finally {
-                        btn.disabled = false;
-                    }
-                };
-                
-            } catch (err) {
-                window.showToast("Error loading pledge: " + err.message, "error");
-                console.error(err);
-            }
-        };
+        // ✅ Admin table rendering REMOVED - Data now goes to Google Sheets
 
         // Auth State Handler
         onAuthStateChanged(auth, (user) => {
@@ -1642,12 +1148,8 @@
                     mobileAuthBtn.onclick = window.handleLogout;
                 }
 
-                if (user.email === ADMIN_EMAIL) {
-                    adminTrigger.classList.remove('hidden');
-                    setupAdminListeners();
-                } else {
-                    adminTrigger.classList.add('hidden');
-                }
+                // Admin panel disabled - using Google Sheets instead
+                adminTrigger.classList.add('hidden');
                 loadProducts(); 
             } else {
                 // Guest
@@ -1765,6 +1267,10 @@
             }
         };
 
+        // Google Sheets Integration - Replace with your Google Apps Script URL
+        const GOOGLE_SHEETS_WEBHOOK = 'https://script.google.com/macros/d/YOUR_SCRIPT_ID/usercall';
+        // TO SETUP: Create Google Sheet → Create Google Apps Script → Deploy as webhook → Replace URL
+        
         window.handleModalPledge = async (e) => {
             e.preventDefault();
             const btn = e.target.querySelector('button');
@@ -1772,60 +1278,45 @@
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...'; 
             btn.disabled = true;
             
-            const firstName = sanitizeHTML(e.target.firstName.value);
-            const lastName = sanitizeHTML(e.target.lastName.value);
-            const email = sanitizeHTML(e.target.email.value);
-            const phone = sanitizeHTML(e.target.phone.value);
-            const birthday = sanitizeHTML(e.target.birthday.value);
+            const firstName = e.target.firstName.value.trim();
+            const lastName = e.target.lastName.value.trim();
+            const email = e.target.email.value.trim();
+            const phone = e.target.phone.value.trim();
+            const birthday = e.target.birthday.value.trim();
+            const timestamp = new Date().toISOString();
 
-            console.log('Attempting to save pledge...', { firstName, lastName, email, phone, birthday });
+            // Prepare data for Google Sheets
+            const data = {
+                timestamp,
+                firstName,
+                lastName,
+                fullName: `${firstName} ${lastName}`,
+                email,
+                phone,
+                birthday
+            };
             
-            if (!db) {
-                // Save to localStorage as fallback
-                const pending = JSON.parse(localStorage.getItem('pendingPledges') || '[]');
-                pending.push({
-                    firstName, lastName, fullName: `${firstName} ${lastName}`,
-                    email, phone, birthday, timestamp: new Date().toISOString()
-                });
-                localStorage.setItem('pendingPledges', JSON.stringify(pending));
-                
-                window.showToast("Offline mode: Pledge saved locally and will sync when online", 'success');
-                document.getElementById('modal-form-container').classList.add('hidden');
-                document.getElementById('modal-success').classList.remove('hidden');
-                document.getElementById('modal-success').classList.add('flex');
-                e.target.reset();
-                btn.innerHTML = old; 
-                btn.disabled = false;
-                return;
-            }
-
             try {
-                const docRef = await addDoc(collection(db, 'pledges'), {
-                    firstName, lastName, fullName: `${firstName} ${lastName}`, 
-                    email, phone, birthday, timestamp: serverTimestamp()
+                // Send to Google Sheets via Google Apps Script
+                const response = await fetch(GOOGLE_SHEETS_WEBHOOK, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
                 });
-                console.log('Pledge saved with ID:', docRef.id);
-                window.showToast("Welcome to the family!", 'success');
+                
+                // Show success message
+                window.showToast("Welcome to the family! Your pledge has been recorded.", 'success');
+                console.log('Pledge submitted to Google Sheets:', data);
+                
+                // Show success state
                 document.getElementById('modal-form-container').classList.add('hidden');
                 document.getElementById('modal-success').classList.remove('hidden');
                 document.getElementById('modal-success').classList.add('flex');
                 e.target.reset();
             } catch(err) { 
-                console.error('Error saving pledge:', err);
-                
-                // Fallback to localStorage
-                const pending = JSON.parse(localStorage.getItem('pendingPledges') || '[]');
-                pending.push({
-                    firstName, lastName, fullName: `${firstName} ${lastName}`,
-                    email, phone, birthday, timestamp: new Date().toISOString()
-                });
-                localStorage.setItem('pendingPledges', JSON.stringify(pending));
-                
-                window.showToast("Saved locally (will sync when connection improves)", 'success');
-                document.getElementById('modal-form-container').classList.add('hidden');
-                document.getElementById('modal-success').classList.remove('hidden');
-                document.getElementById('modal-success').classList.add('flex');
-                e.target.reset();
+                console.error('Error submitting pledge:', err);
+                window.showToast("Error saving pledge. Please check your internet connection.", 'error');
             } finally { 
                 btn.innerHTML = old; 
                 btn.disabled = false; 
@@ -1835,7 +1326,7 @@
         // Load products immediately on page load
         loadProducts();
         
-        initAuth(); 
+        // Firebase removed - using Google Sheets instead 
     </script>
 </body>
 </html>
