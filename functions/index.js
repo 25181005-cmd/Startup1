@@ -12,6 +12,7 @@ const {onRequest} = require("firebase-functions/https");
 const {onDocumentCreated} = require("firebase-functions/v2/firestore");
 const logger = require("firebase-functions/logger");
 const admin = require("firebase-admin");
+const {google} = require('googleapis');
 
 // Initialize Firebase Admin
 admin.initializeApp();
@@ -273,4 +274,155 @@ function generateCustomerEmailHTML(order) {
         </html>
     `;
 }
+
+// ============================================================================
+// MANUAL SYNC FUNCTION - Sync all pledges to Google Sheets
+// ============================================================================
+// This is a callable function that manually syncs all pledges to Google Sheets
+// Useful for backfilling data or testing the webhook connection
+
+exports.syncPledgesToSheets = onRequest(
+    { cors: true },
+    async (req, res) => {
+        try {
+            const db = admin.firestore();
+            const pledgesRef = db.collection('pledges');
+            const snapshot = await pledgesRef.get();
+
+            if (snapshot.empty) {
+                return res.json({
+                    success: true,
+                    message: 'No pledges to sync',
+                    count: 0
+                });
+            }
+
+            let syncedCount = 0;
+            let failedCount = 0;
+            const errors = [];
+
+            // Sync each pledge to Google Sheets
+            for (const doc of snapshot.docs) {
+                try {
+                    const pledgeData = doc.data();
+                    const payload = {
+                        type: 'pledge',
+                        id: doc.id,
+                        firstName: pledgeData.firstName || '',
+                        lastName: pledgeData.lastName || '',
+                        fullName: pledgeData.fullName || '',
+                        email: pledgeData.email || '',
+                        phone: pledgeData.phone || '',
+                        birthday: pledgeData.birthday || '',
+                        timestamp: pledgeData.timestamp ? 
+                            new Date(pledgeData.timestamp.seconds * 1000).toISOString() : 
+                            new Date().toISOString()
+                    };
+
+                    const response = await fetch(GOOGLE_SHEETS_WEBHOOK_URL, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(payload),
+                        timeout: 5000
+                    });
+
+                    if (response.ok) {
+                        syncedCount++;
+                        logger.info(`✅ Pledge synced: ${doc.id}`);
+                    } else {
+                        failedCount++;
+                        errors.push(`${doc.id}: HTTP ${response.status}`);
+                        logger.warn(`❌ Failed to sync pledge ${doc.id}: ${response.status}`);
+                    }
+                } catch (error) {
+                    failedCount++;
+                    errors.push(`${doc.id}: ${error.message}`);
+                    logger.error(`❌ Error syncing pledge ${doc.id}:`, error);
+                }
+            }
+
+            return res.json({
+                success: failedCount === 0,
+                message: `Synced ${syncedCount} pledges, ${failedCount} failed`,
+                synced: syncedCount,
+                failed: failedCount,
+                errors: errors.length > 0 ? errors : undefined,
+                totalPledges: snapshot.size
+            });
+        } catch (error) {
+            logger.error('Error in syncPledgesToSheets:', error);
+            return res.status(500).json({
+                success: false,
+                error: error.message
+            });
+        }
+    }
+);
+
+// =====================================================
+// REAL-TIME FIRESTORE TO GOOGLE SHEETS SYNC
+// This function syncs pledges to Google Sheets INSTANTLY
+// when new documents are created in Firestore
+// =====================================================
+exports.syncFirestoreToSheetsLive = onDocumentCreated(
+  'pledges/{docId}',
+  async (event) => {
+    try {
+      const pledge = event.data.data();
+      const pledgeId = event.params.docId;
+      const SHEET_ID = process.env.GOOGLE_SHEET_ID;
+      const SHEET_RANGE = 'Sheet1!A:G';
+
+      // Only sync if we have a Google Sheet ID configured
+      if (!SHEET_ID) {
+        logger.warn('GOOGLE_SHEET_ID not configured. Skipping live sheet sync.');
+        return;
+      }
+
+      // Create a JWT client for service account authentication
+      const auth = new google.auth.GoogleAuth({
+        scopes: ['https://www.googleapis.com/auth/spreadsheets'],
+      });
+      const authClient = await auth.getClient();
+      const sheets = google.sheets({ version: 'v4', auth: authClient });
+
+      // Prepare the row data to append
+      const rowData = [[
+        pledge.firstName || '',
+        pledge.lastName || '',
+        pledge.email || '',
+        pledge.birthday || '',
+        pledge.phone || '',
+        new Date(pledge.timestamp).toLocaleString('en-IN'),  // India timezone
+      ]];
+
+      // Append the row to Google Sheet
+      const response = await sheets.spreadsheets.values.append({
+        spreadsheetId: SHEET_ID,
+        range: SHEET_RANGE,
+        valueInputOption: 'USER_ENTERED',
+        resource: {
+          values: rowData,
+        },
+      });
+
+      logger.info('Live sync to Google Sheets successful', {
+        pledgeId,
+        updatedRange: response.data.updates.updatedRange,
+        updatedRows: response.data.updates.updatedRows,
+      });
+
+    } catch (error) {
+      logger.error('Error syncing to Google Sheets Live', {
+        pledgeId: event.params.docId,
+        error: error.message,
+      });
+      // Don't fail the function - Firestore write should succeed even if Sheets sync fails
+    }
+  }
+);
+
+
 
